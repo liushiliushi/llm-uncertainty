@@ -1,0 +1,63 @@
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 16.0, '2': 9.0, '3': 20.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "The problem can be solved with some basic math. First, we'll calculate the amount of eggs Janet has left after consuming and baking every day. She starts with 16, eats 3 for breakfast and uses 4 for muffins, which leaves her with 16 - 3 - 4 = 9 eggs. Since, as stated in the problem, she sells her remaining fresh duck eggs at the farmers' market for $2 each, and she has 9 eggs to sell, the total amount of money she earns from selling her eggs is 9 * $2 = $18. \n\nG1: 18\nP1: 100%\n\nHowever, it is unlikely that alternatives posses correct answer, as given conditions in problem are explicit and leave no room for ambiguity. So, the incorrect probabilities are just hypothetical.\n\nG2: 16\nP2: 0%\n\nG3: 9\nP3: 0%\n\nG4: 20\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 16.0, '2': 9.0, '3': 20.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "The problem can be solved with some basic math. First, we'll calculate the amount of eggs Janet has left after consuming and baking every day. She starts with 16, eats 3 for breakfast and uses 4 for muffins, which leaves her with 16 - 3 - 4 = 9 eggs. Since, as stated in the problem, she sells her remaining fresh duck eggs at the farmers' market for $2 each, and she has 9 eggs to sell, the total amount of money she earns from selling her eggs is 9 * $2 = $18. \n\nG1: 18\nP1: 100%\n\nHowever, it is unlikely that alternatives posses correct answer, as given conditions in problem are explicit and leave no room for ambiguity. So, the incorrect probabilities are just hypothetical.\n\nG2: 16\nP2: 0%\n\nG3: 9\nP3: 0%\n\nG4: 20\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 16.0, '2': 9.0, '3': 20.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "The problem can be solved with some basic math. First, we'll calculate the amount of eggs Janet has left after consuming and baking every day. She starts with 16, eats 3 for breakfast and uses 4 for muffins, which leaves her with 16 - 3 - 4 = 9 eggs. Since, as stated in the problem, she sells her remaining fresh duck eggs at the farmers' market for $2 each, and she has 9 eggs to sell, the total amount of money she earns from selling her eggs is 9 * $2 = $18. \n\nG1: 18\nP1: 100%\n\nHowever, it is unlikely that alternatives posses correct answer, as given conditions in problem are explicit and leave no room for ambiguity. So, the incorrect probabilities are just hypothetical.\n\nG2: 16\nP2: 0%\n\nG3: 9\nP3: 0%\n\nG4: 20\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "We first calculate the total number of eggs left after Janet eats her breakfast and bakes muffins. This is calculated by subtracting the total usage (3 for breakfast + 4 for muffins) from the total egg production - which is 16. So, the number of eggs that she sells is 16 - (3 + 4) = 9. We multiply this number of eggs by $2 to get the amount she makes everyday at the farmers' market.\n\nG1: 18\nP1: 100%\n\nNo other plausible answers can be derived from the provided data.\n\nG2: 0\nP2: 0%\n\nG3: 0\nP3: 0%\n\nG4: 0\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "We first calculate the total number of eggs left after Janet eats her breakfast and bakes muffins. This is calculated by subtracting the total usage (3 for breakfast + 4 for muffins) from the total egg production - which is 16. So, the number of eggs that she sells is 16 - (3 + 4) = 9. We multiply this number of eggs by $2 to get the amount she makes everyday at the farmers' market.\n\nG1: 18\nP1: 100%\n\nNo other plausible answers can be derived from the provided data.\n\nG2: 0\nP2: 0%\n\nG3: 0\nP3: 0%\n\nG4: 0\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "We first calculate the total number of eggs left after Janet eats her breakfast and bakes muffins. This is calculated by subtracting the total usage (3 for breakfast + 4 for muffins) from the total egg production - which is 16. So, the number of eggs that she sells is 16 - (3 + 4) = 9. We multiply this number of eggs by $2 to get the amount she makes everyday at the farmers' market.\n\nG1: 18\nP1: 100%\n\nNo other plausible answers can be derived from the provided data.\n\nG2: 0\nP2: 0%\n\nG3: 0\nP3: 0%\n\nG4: 0\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 6
+real_answer:18
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 18.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': "We first calculate the total number of eggs left after Janet eats her breakfast and bakes muffins. This is calculated by subtracting the total usage (3 for breakfast + 4 for muffins) from the total egg production - which is 16. So, the number of eggs that she sells is 16 - (3 + 4) = 9. We multiply this number of eggs by $2 to get the amount she makes everyday at the farmers' market.\n\nG1: 18\nP1: 100%\n\nNo other plausible answers can be derived from the provided data.\n\nG2: 0\nP2: 0%\n\nG3: 0\nP3: 0%\n\nG4: 0\nP4: 0%"}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}

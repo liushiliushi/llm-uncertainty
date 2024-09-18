@@ -1,0 +1,18 @@
+sample size: 5
+real_answer:3
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 3.0, '1': 2.0, '2': 1.0, '3': 4.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': 'Step-by-step reasoning: The robe takes 2 bolts of blue fiber. It takes half that much white fiber, which is 2/2 = 1 bolt. So it takes 2 + 1 = 3 bolts in total.\n\nFinal answer:\nG1: 3\nP1: 100%\nG2: 2\nP2: 0%\nG3: 1\nP3: 0%\nG4: 4\nP4: 0%\n\n\nFinal Answer: The final answer is 3. I hope it is correct.'}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
+sample size: 5
+real_answer:3
+predicted_answer:place_holder
+predicted_conf:place_holder
+hint_answers:{'trail_0': {'0': 3.0, '1': 2.0, '2': 1.0, '3': 4.0}}
+hint_confs:{'trail_0': {'0': 100.0, '1': 0.0, '2': 0.0, '3': 0.0}}
+hint_responses:{'trail_0': 'Step-by-step reasoning: The robe takes 2 bolts of blue fiber. It takes half that much white fiber, which is 2/2 = 1 bolt. So it takes 2 + 1 = 3 bolts in total.\n\nFinal answer:\nG1: 3\nP1: 100%\nG2: 2\nP2: 0%\nG3: 1\nP3: 0%\nG4: 4\nP4: 0%\n\n\nFinal Answer: The final answer is 3. I hope it is correct.'}
+hint_entries:{'trail_0': ''}
+hint_multi_step_confs:{'trail_0': None}
