@@ -55,6 +55,16 @@ args = parser.parse_args()
 ############### READ DATA ################
 error_log_file = args.input_file.replace('.json', '_error_log.log')
 # rewrite error_log_file
+
+log_dir = os.path.dirname(error_log_file)
+
+# # 判断文件夹是否存在
+# if not os.path.exists(log_dir):
+#     # 如果不存在，则创建文件夹
+#     os.makedirs(log_dir)
+#     print(f"Created directory: {log_dir}")
+# else:
+#     print(f"Directory already exists: {log_dir}")
 with open(error_log_file, 'w') as f:
     f.write("")
 
