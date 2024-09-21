@@ -193,7 +193,7 @@ error_dataset = {}
 
 
 if args.model_name == "llama3.1":
-    model_name = "/home/.llama/checkpoints/Meta-Llama3.1-8B"
+    model_name = "/home/workspace/meta-llama/Meta-Llama-3.1-8B"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
@@ -235,7 +235,7 @@ for idx, question in enumerate(qa_data.keys()):
                                                                             hint_type, args.task_type, args.use_cot,
                                                                             openai_key=openai_key,
                                                                             temperature=args.temperature_for_ensemble)
-                                                                            
+
             final_result[question][hint_type]["hint_entry"] = misleading_hint
         
     elif args.sampling_type == "self_random":
