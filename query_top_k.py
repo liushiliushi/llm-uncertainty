@@ -13,6 +13,8 @@ import json
 from utils.dataset_loader import load_dataset
 from utils.llm_query_helper import calculate_result_per_question
 from argparse import ArgumentParser
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
 
 openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
 
@@ -39,6 +41,7 @@ parser.add_argument("--task_type", type=str, default="multi_choice_qa")
 
 # for top-k prompt strategy
 parser.add_argument("--prompt_type", type=str, default="top_k")
+parser.add_argument("--from_peft_checkpoint", type=str, default=None)
 parser.add_argument("--num_K", type=int, required=True, help="number of top K results")
 
 # for ensemble-based methods
@@ -187,7 +190,15 @@ print("output_file: ", args.output_file, "\n")
 start_time = time.time()
 
 error_dataset = {}
-     
+
+
+if args.model_name == "llama3":
+    model_name = "/home/lyb/workspace/llama3/llama3-8b"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    if args.from_peft_checkpoint:
+        model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
+
 for idx, question in enumerate(qa_data.keys()):
     if question in final_result:
         print(f"Question: [{question}] already in final_result, skip")
@@ -201,8 +212,17 @@ for idx, question in enumerate(qa_data.keys()):
             misleading_hint = generate_misleading_hint(hint_type, args.task_type, question, qa_data)
             prompt = generate_prompt(prompt_description, question, misleading_hint)
             print(f"using {hint_type}, prompt: \n{prompt}")
-            
-            final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt, final_result, error_dataset, qa_data, hint_type, args.task_type, args.use_cot, openai_key=openai_key, temperature=args.temperature_for_ensemble)
+
+            if args.model_name == "llama3":
+                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
+                                                                            final_result, error_dataset, qa_data,
+                                                                            hint_type, args.task_type, args.use_cot,
+                                                                            openai_key=openai_key,
+                                                                            temperature=args.temperature_for_ensemble,
+                                                                            model=model,
+                                                                            tokenizer=tokenizer)
+            else:
+                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt, final_result, error_dataset, qa_data, hint_type, args.task_type, args.use_cot, openai_key=openai_key, temperature=args.temperature_for_ensemble)
             
             final_result[question][hint_type]["hint_entry"] = misleading_hint
         
@@ -210,8 +230,21 @@ for idx, question in enumerate(qa_data.keys()):
         for ith in range(args.num_ensemble):
             prompt = generate_prompt(prompt_description, question, misleading_hint="")
             hint_type = f"trail_{ith}"
-            final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt, final_result, error_dataset, qa_data, hint_type, args.task_type, args.use_cot, openai_key=openai_key, temperature=args.temperature_for_ensemble)
-    
+            if args.model_name == "llama3":
+                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
+                                                                            final_result, error_dataset, qa_data,
+                                                                            hint_type, args.task_type, args.use_cot,
+                                                                            openai_key=openai_key,
+                                                                            temperature=args.temperature_for_ensemble,
+                                                                            model=model,
+                                                                            tokenizer=tokenizer)
+            else:
+                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
+                                                                            final_result, error_dataset, qa_data,
+                                                                            hint_type, args.task_type, args.use_cot,
+                                                                            openai_key=openai_key,
+                                                                            temperature=args.temperature_for_ensemble)
+
     if idx % 5 == 0:
         end_time = time.time()
         elapsed_time = end_time - start_time

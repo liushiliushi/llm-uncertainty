@@ -19,13 +19,17 @@ import zipfile
 
 # Load model directly
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
 
-
-def LlamaChatCompletion(model_name, prompt, max_tokens):
+def LlamaChatCompletion(model_name, prompt, max_tokens, model, tokenizer):
     os.environ['CUDA_VISIBLE_DEVICES'] = "5"
     # model_name = "daryl149/llama-2-7b-chat-hf"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    # tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    #
+    # if from_peft_checkpoint:
+    #     model = PeftModel.from_pretrained(model, from_peft_checkpoint, is_trainable=True)
+
 
     input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
     outputs = model.generate(input_ids=input_ids,
@@ -38,11 +42,13 @@ def LlamaChatCompletion(model_name, prompt, max_tokens):
 
     return outputs
 
-def Llama3ChatCompletion(model_name, prompt, max_tokens):
+def Llama3ChatCompletion(model_name, prompt, max_tokens, model, tokenizer):
     # os.environ['CUDA_VISIBLE_DEVICES'] = "5"
     # model_name = "daryl149/llama-2-7b-chat-hf"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    # tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    # if from_peft_checkpoint:
+    #     model = PeftModel.from_pretrained(model, from_peft_checkpoint, is_trainable=True)
 
     input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda") 
     outputs = model.generate(input_ids=input_ids,
@@ -50,28 +56,6 @@ def Llama3ChatCompletion(model_name, prompt, max_tokens):
 
     output = tokenizer.decode(outputs[0][0][input_ids.shape[-1]:], skip_special_tokens=True)
     
-    # pdb.set_trace()
-    
+
     return output
-    
-    # logit=1
-    # logit_layer=torch.ones(1,33)
-    # for _ in range(len(outputs[1])-2):
-    #     # logit=torch.exp(outputs[1][1][0][output_id+_])*logit
-    #     m = torch.nn.Softmax()
-    #     cur_logit=m(outputs[1][1+_][0])
-    #     logit=max(cur_logit)*logit
-
-    #     gen_tok=torch.argmax(outputs[1][1+_][0])
-
-
-    #     logit_by_layer=[outputs.hidden_states[1+_][i][0][-1] for i in range(33)]
-    #     lm_head = model.state_dict()['lm_head.weight']
-    #     logit_layer_vocab=[m(torch.mm(lm_head, logit_by_layer[i].unsqueeze(-1)).squeeze()) for i in range(33)]
-    #     # logit_layer=[(np.array(logit_layer_vocab[i][gen_tok].cpu())) for i in range(33)]
-    #     logit_layer=torch.mul(logit_layer,torch.Tensor([logit_layer_vocab[i][gen_tok] for i in range(33)]))
-
-
-            
-
 
