@@ -92,10 +92,10 @@ def calculate_result_per_question(model_name, question, prompt, final_result, er
                 from utils.api_local import VicunaChatCompletion
                 orginal_anser = VicunaChatCompletion(prompt)
 
-            elif model_name.lower() == 'llama3':
+            elif model_name.lower() == 'llama3.1' or model_name.lower()=="llama3.1-instruct":
 
                 from utils.api_llama import Llama3ChatCompletion
-                model_name = "/home/lyb/workspace/llama3/llama3-8b"
+                # model_name = "/home/lyb/workspace/llama3/llama3-8b"
                 orginal_anser = Llama3ChatCompletion(model_name, prompt, max_tokens=max_tokens, model=model, tokenizer=tokenizer)
                 
             elif model_name.lower() == 'llama_2_7b_chat_hf':
