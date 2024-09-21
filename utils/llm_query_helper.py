@@ -3,7 +3,7 @@ from openai import OpenAI
 import requests
 import json
 #calculate_result_per_question('vicuna', 'a', 'a', {}, {}, {}, 'hint0', 'multi', False)
-def calculate_result_per_question(model_name, question, prompt, final_result, error_dataset, qa_dataset, hint_type, task_type, use_cot, openai_key, temperature=0.0):
+def calculate_result_per_question(model_name, question, prompt, final_result, error_dataset, qa_dataset, hint_type, task_type, use_cot, openai_key, temperature=0.0, model=None, tokenizer=None):
     """
     - final_result is used to record the result of each question
     - error_dataset is used to record the error message of each question, if the error occurs
@@ -96,13 +96,13 @@ def calculate_result_per_question(model_name, question, prompt, final_result, er
 
                 from utils.api_llama import Llama3ChatCompletion
                 model_name = "/home/lyb/workspace/llama3/llama3-8b"
-                orginal_anser = Llama3ChatCompletion(model_name, prompt, max_tokens=max_tokens)
+                orginal_anser = Llama3ChatCompletion(model_name, prompt, max_tokens=max_tokens, model=model, tokenizer=tokenizer)
                 
             elif model_name.lower() == 'llama_2_7b_chat_hf':
                 pdb.set_trace()
                 from utils.api_llama import LlamaChatCompletion
                 model_name = "daryl149/llama-2-7b-chat-hf"
-                orginal_anser = LlamaChatCompletion(model_name, prompt, max_tokens=max_tokens)
+                orginal_anser = LlamaChatCompletion(model_name, prompt, max_tokens=max_tokens, model=model, tokenizer=tokenizer)
                 
                 
             else:
