@@ -198,8 +198,14 @@ if args.model_name == "llama3.1":
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
-if args.model_name == "llama3.1-instruct":
+elif args.model_name == "llama3.1-instruct":
     model_name = "/home/.llama/checkpoints/Meta-Llama3.1-8B-Instruct"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    if args.from_peft_checkpoint:
+        model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
+elif args.model_name == "llama3":
+    model_name = "/home/lyb/workspace/llama3/llama3-8b"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
@@ -221,7 +227,7 @@ for idx, question in enumerate(qa_data.keys()):
             prompt = generate_prompt(prompt_description, question, misleading_hint)
             print(f"using {hint_type}, prompt: \n{prompt}")
 
-            if args.model_name == "llama3.1" or args.name == "llama3.1-instruct":
+            if args.model_name == "llama3.1" or args.name == "llama3.1-instruct" or args.name == "llama3":
                 final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
                                                                             final_result, error_dataset, qa_data,
                                                                             hint_type, args.task_type, args.use_cot,
@@ -242,7 +248,7 @@ for idx, question in enumerate(qa_data.keys()):
         for ith in range(args.num_ensemble):
             prompt = generate_prompt(prompt_description, question, misleading_hint="")
             hint_type = f"trail_{ith}"
-            if args.model_name == "llama3.1" or args.name == "llama3.1-instruct":
+            if args.model_name == "llama3.1" or args.model_name == "llama3.1-instruct" or args.model_name == "llama3":
                 final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
                                                                             final_result, error_dataset, qa_data,
                                                                             hint_type, args.task_type, args.use_cot,
