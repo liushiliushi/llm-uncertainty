@@ -7,14 +7,14 @@ PROMPT_TYPE="top_k"
 SAMPLING_TYPE="self_random" 
 NUM_ENSEMBLE=5
 CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
-PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints0922"
+# PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints0922"
 
 
 # TODO uncomment following lines to run on different settings
 #############################################################
 
 DATASET_NAME="GSM8K"
-MODEL_NAME="llama3"
+MODEL_NAME="llama3.1"
 TASK_TYPE="open_number_qa"
 DATASET_PATH="dataset/grade_school_math/data/test.jsonl"
 USE_COT=true # use cot or not
@@ -92,7 +92,7 @@ python query_top_k.py \
    --sampling_type $SAMPLING_TYPE \
    --num_ensemble $NUM_ENSEMBLE \
    --temperature_for_ensemble $TEMPERATURE \
-   --from_peft_checkpoint $PEFT \
+   # --from_peft_checkpoint $PEFT \
    $USE_COT_FLAG
 
 
