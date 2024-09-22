@@ -1,0 +1,64 @@
+{
+    "hyperparameters": {
+        "dataset_name": "GSM8K",
+        "data_path": "dataset/grade_school_math/data/test.jsonl",
+        "output_file": "final_output/top_k_self_random_5/llama3/GSM8K/GSM8K_llama3_09-22-03-26.json",
+        "use_cot": true,
+        "model_name": "llama3",
+        "task_type": "open_number_qa",
+        "prompt_type": "top_k",
+        "from_peft_checkpoint": "/home/lyb/workspace/llama-recipes/src/checkpoints0922",
+        "num_K": 4,
+        "sampling_type": "self_random",
+        "num_ensemble": 5,
+        "temperature_for_ensemble": 0.7
+    },
+    "elapsed_time": "Elapsed time: 34.32 seconds",
+    "sample_tested": 1,
+    "error_count": 0,
+    "sample_prompt": {
+        "question": "Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\n",
+        "hint": "Hint: I think the answer should be 2",
+        "prompt": "Provide your 4 best guesses and the probability that each is correct (0% to 100%) for the following question. Give your step-by-step reasoning in a few words first and then give the final answer using the following format:\nG1: <ONLY the numerical answer of first most likely guess; not a complete sentence, just the guess!>\nP1: <ONLY the probability that G1 is correct, without any extra commentary whatsoever; just the probability!>\n...\nG4: <ONLY the numerical answer of 4-th most likely guess>\nP4: <ONLY the probability that G4 is correct, without any extra commentary whatsoever; just the probability!>\n\nNote that the hint is only for your reference. Your confidence level should represent your certainty in your own answer, rather than the accuracy of the information provided in the hint.\nQuestion: Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\n\nHint: I think the answer should be 2"
+    },
+    "final_result": {
+        "Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\n": {
+            "trail_0": {
+                "hint_response": "Step-by-step reasoning: \nJanet eats 3 eggs, bakes 4 muffins, and sells the remaining eggs. She lays 16 eggs, so she has 16 - 3 - 4 = 9 eggs left. She sells these eggs for $2 each, so she makes 9 x 2 = 18 dollars.\n\nFinal answer:\nG1: 18\nP1:90\nG2: 17.6\nP2:40\nG3: 17.4\nP3:35.6\nG4: 17.2\nP4:30.4\n\nNote: The probabilities are based on the reasoning provided and are subjective. They are intended to reflect the likelihood of each guess being correct, but may not be based on actual data or statistics.",
+                "real_answer": {
+                    "answer": "18",
+                    "options": 6
+                }
+            },
+            "trail_1": {
+                "hint_response": "Step-by-step reasoning: \nJanet eats 3 eggs, bakes 4 muffins, and has 9 eggs left. She sells these eggs for $2 each, so she makes 18 dollars.\n\nFinal answer:\nG1: 18\nP1:90\nG2: 20\nP2:70\nG3:28\nP3:90\nG4:90\nP4:90\n```\nNote: The probabilities are subjective and based on the author's interpretation of the question. They are intended to be a fun and creative way to approach the problem, rather than a serious mathematical analysis. Feel free to adjust the probabilities to your own liking!",
+                "real_answer": {
+                    "answer": "18",
+                    "options": 6
+                }
+            },
+            "trail_2": {
+                "hint_response": "Step-by-step reasoning: \nJanet eats 3 eggs, bakes 4 muffins, and sells the remaining eggs. She lays 16 eggs, so she has 16 - 3 - 4 = 9 eggs left. She sells these eggs for $2 each, so she makes 9 x 2 = 18 dollars.\n\nFinal answer:\nG1: 18\nP1:90\nG2: 17.6\nP2:40\nG3: 17.5\nP3:35.7\nG4: 17.4\nP4:30.6\n\nNote: The probabilities are based on the reasoning provided and are subjective. They are intended to be a rough estimate of the likelihood of each guess being correct. The actual probability of each guess being correct is unknown.",
+                "real_answer": {
+                    "answer": "18",
+                    "options": 6
+                }
+            },
+            "trail_3": {
+                "hint_response": "Step-by-step reasoning: \nJanet eats 3 eggs, bakes 4 muffins, and sells the remaining eggs. She lays 16 eggs, so she has 16 - 3 - 4 = 9 eggs left. She sells these eggs for $2 each, so she makes 9 x 2 = 18 dollars.\n\nFinal answer:\nG1: 18\nP1:90\nG2: 17.6\nP2:40\nG3: 17.5\nP3:35.7\nG4: 17.4\nP4:30.8\n\nNote: The probabilities are based on the reasoning provided and are subjective. They are intended to be a rough estimate of the likelihood of each guess being correct. The actual answer is 18 dollars.",
+                "real_answer": {
+                    "answer": "18",
+                    "options": 6
+                }
+            },
+            "trail_4": {
+                "hint_response": "Step-by-step reasoning: \nJanet eats 3 eggs, bakes 4 muffins, and sells the remaining 9 eggs. She makes $2 per egg, so she makes $18 per day at the farmers' market.\n\nFinal answer:\nG1: 18\nP1:90\nG2: 19\nP2:10\nG3: 20\nP3:90\nG4: 21\nP4:80\n```\n\nNote: The probabilities are subjective and based on the author's interpretation of the question. They are intended to be a fun and creative way to approach the problem, rather than a serious statistical analysis. Feel free to adjust the probabilities to your own liking!",
+                "real_answer": {
+                    "answer": "18",
+                    "options": 6
+                }
+            }
+        }
+    },
+    "error_dataset": {}
+}
