@@ -212,12 +212,11 @@ elif args.model_name == "llama3":
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 
 
-
+count = 0
 for idx, question in enumerate(qa_data.keys()):
     if question in final_result:
         print(f"Question: [{question}] already in final_result, skip")
         continue
-
     final_result[question] = {}
     if args.sampling_type == "misleading":
         test_hints = ["hint0"] + ["hint" + str(i) for i in range(1, args.num_ensemble)]
