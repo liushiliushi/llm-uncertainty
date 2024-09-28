@@ -21,7 +21,9 @@ import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 from utils.extract_result_lib import extract_hint_response_vanilla, extract_hint_response_self_evaluate, extract_hint_response_top_k, extract_hint_response_multistep
 from typing import Tuple, Dict
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 #%%
 ################# CONFIG #####################
 parser = ArgumentParser()

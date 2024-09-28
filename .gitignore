@@ -6,3 +6,4 @@ artifacts/
 final_output/
 *.log
 *.sh
+dataset/

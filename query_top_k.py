@@ -15,7 +15,9 @@ from utils.llm_query_helper import calculate_result_per_question
 from argparse import ArgumentParser
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
 
 time_stamp = time.strftime("%Y-%m-%d_%H-%M")
@@ -153,8 +155,9 @@ def generate_prompt(description, question, misleading_hint):
         hint_description = "Note that the hint is only for your reference. Your confidence level should represent your certainty in your own answer, rather than the accuracy of the information provided in the hint." 
     else:
         hint_description = ""
-
+    # TODO：
     prompt = f"{description}\n{hint_description}\nQuestion: {question}\n{misleading_hint}"
+    # prompt = f"Question: {question}\n{description}\n{hint_description}\n{misleading_hint}"
         
     return prompt
 

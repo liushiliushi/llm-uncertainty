@@ -28,7 +28,9 @@ import pandas as pd
 from argparse import ArgumentParser
 from adjustText import adjust_text
 from collections import Counter
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 option_list = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
