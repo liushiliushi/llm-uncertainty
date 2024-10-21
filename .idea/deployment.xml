@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="lyb@10.161.66.201:10090 password (16)" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="lyb@10.161.66.201:10090 password (13)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/lyb/workspace/llm-uncertainty" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="lyb@10.161.66.201:10090 password (14)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/lyb/workspace/llm-uncertainty" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="lyb@10.161.66.201:10090 password (16)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/lyb/workspace/llm-uncertainty" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="lyb@10.161.66.201:10090 password (7)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/lyb/workspace/llm-uncertainty" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="lyb@10.161.66.201:10090 password (8)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/lyb/workspace/llm-uncertainty" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
