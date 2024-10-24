@@ -1,33 +1,30 @@
 #!/bin/bash
 
-# prompt strategy = top-k
-# sampling strategy = self-random ->  by setting NUM_ENSEMBLE to decide the number of samples we want to draw from a given question
-# aggregator = consistency / avg-conf / pair-rank (all of them will be automatically computed in the same script)
 PROMPT_TYPE="top_k"
 SAMPLING_TYPE="self_random" 
 NUM_ENSEMBLE=1
 CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
-PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints/object_1018"
+PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints/professional1024_5e-5"
 
 
 # TODO uncomment following lines to run on different settings
 #############################################################
 
-#DATASET_NAME="Professional_Law"
-#MODEL_NAME="llama3.1-instruct"
-#TASK_TYPE="multi_choice_qa"
-#DATASET_PATH="/home/lyb/workspace/dataset/data/val/professional_law_val.csv"
-#USE_COT=true # use cot or not
-#TEMPERATURE=0.7
-#TOP_K=2
-
-DATASET_NAME="BigBench_ObjectCounting"
+DATASET_NAME="Professional_Law"
 MODEL_NAME="llama3.1-instruct"
-TASK_TYPE="open_number_qa"
-DATASET_PATH="/home/lyb/workspace/dataset/ObjectCou/task.json"
+TASK_TYPE="multi_choice_qa"
+DATASET_PATH="/home/lyb/workspace/dataset/data/val/professional_law_val.csv"
 USE_COT=true # use cot or not
 TEMPERATURE=0.7
 TOP_K=2
+
+#DATASET_NAME="BigBench_ObjectCounting"
+#MODEL_NAME="llama3.1-instruct"
+#TASK_TYPE="open_number_qa"
+#DATASET_PATH="/home/lyb/workspace/dataset/ObjectCou/task.json"
+#USE_COT=true # use cot or not
+#TEMPERATURE=0.7
+#TOP_K=2
 
 
 # DATASET_NAME="GSM8K"

@@ -23,7 +23,7 @@ from utils.extract_result_lib import extract_hint_response_vanilla, extract_hint
 from typing import Tuple, Dict
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 #%%
 ################# CONFIG #####################
 parser = ArgumentParser()
