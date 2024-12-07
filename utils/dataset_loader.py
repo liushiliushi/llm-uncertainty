@@ -113,7 +113,17 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
                 'options': options
             }
             qa_data[question] = value
-            
+    elif dataset_name == "trivia_qa":
+        file_path = "/home/lyb/workspace/Uncertainty_ft/dataset/trivia_qa/tqa_val.jsonl"
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = [json.loads(line) for line in f]
+        for item in data:
+            question = item['question']
+            correct_answer = item['correct_answer']
+            qa_data[question] = {
+                'answer': correct_answer
+            }
+
     elif "hybrid" in dataset_name.lower():
         with open(data_path, 'r') as f:
             qa_data = json.load(f)

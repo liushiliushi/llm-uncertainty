@@ -524,7 +524,7 @@ def extract_hint_response_top_k(text, K, options: Dict[str, str], task_type, err
         is_match = False
         patterns_and_postprocess = process_pipeline(ith+1)
         for pattern, match_processor in patterns_and_postprocess:
-            match = re.search(pattern, text)
+            match = c
             if not match:
                 continue
             else:

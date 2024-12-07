@@ -49,8 +49,10 @@ def Llama3ChatCompletion(model_name, prompt, max_tokens, model, tokenizer):
     # model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     # if from_peft_checkpoint:
     #     model = PeftModel.from_pretrained(model, from_peft_checkpoint, is_trainable=True)
-
-    input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda") 
+    if model_name == "llama3.1-instruct":
+        input_ids = tokenizer.apply_chat_template(prompt, tokenize=True, padding="longest", truncation=True, return_tensors="pt", continue_final_message=True).to(model.device)
+    else:
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda") 
     outputs = model.generate(input_ids=input_ids,
                              max_new_tokens=max_tokens,return_dict_in_generate=True, output_scores=True, output_hidden_states=True)
 

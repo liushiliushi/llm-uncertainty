@@ -9,20 +9,15 @@ Sampling strategy: can be "misleading" or "self_random"; can query only once by 
 import os, pdb, time, re
 import os.path as osp
 import random
-import torch
 import json
 from utils.dataset_loader import load_dataset
 from utils.llm_query_helper import calculate_result_per_question
 from argparse import ArgumentParser
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
-# import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
 
 time_stamp = time.strftime("%Y-%m-%d_%H-%M")
-
+openai_key = None
 
 ################# CONFIG #####################
 parser = ArgumentParser()
@@ -42,14 +37,11 @@ parser.add_argument("--task_type", type=str, default="multi_choice_qa")
 
 
 
-# for top-k prompt strategy
-parser.add_argument("--prompt_type", type=str, default="top_k")
 parser.add_argument("--from_peft_checkpoint", type=str, default=None)
-parser.add_argument("--num_K", type=int, required=True, help="number of top K results")
 
 # for ensemble-based methods
-parser.add_argument("--sampling_type", type=str, default="misleading") # misleading or inner randomness 
-parser.add_argument("--num_ensemble", type=int, default=1, required=True) 
+parser.add_argument("--sampling_type", type=str, default="self_random") # misleading or inner randomness 
+parser.add_argument("--num_ensemble", type=int, default=1) 
 parser.add_argument("--temperature_for_ensemble", type=float, default=0.0) # temperature for ensemble-based methods
 
 
@@ -73,31 +65,27 @@ print(f"Loading dataset {args.dataset_name} from {args.data_path}")
 qa_data = load_dataset(args.dataset_name, args.task_type, args.data_path)
 
 ###################### PROMPT ############################
-k = args.num_K
-print(f"***Using top {k} results for {args.dataset_name} {args.task_type} {args.model_name}***")
 
 if args.task_type == "multi_choice_qa":
     task_output_description = "option letter"
 elif args.task_type == "open_number_qa":
     task_output_description = "numerical answer"
-elif args.task_type == "trivia_qa":
-    task_output_description = "final answer"
 else:
     raise ValueError(f"task_type {args.task_type} not supported")
 
     
 if not args.use_cot:
-    prompt_description = f"Provide your {k} best guesses and the probability that each is correct (0% to 100%) for the following question. Give ONLY the {task_output_description} of your guesses and probabilities, no other words or explanation. For example:\n"
+    prompt_description = f"Provide your answer for the following question. Give ONLY the {task_output_description} of your answer, no other words or explanation. For example:\n"
 elif args.use_cot:
-    prompt_description = f"Provide your {k} best guesses and the probability that each is correct (0% to 100%) for the following question. Give your step-by-step reasoning in a few words first and then give the final answer using the following format:\n"
+    prompt_description = f"Provide your answer for the following question. Give your step-by-step reasoning in a few words first and then give the final answer using the following format:\n"
     
 
 # we finally use the confidence before all answers prompting 
 confidence_before_all_answers = True
 if confidence_before_all_answers: 
-    prompt_description += f"G1: <ONLY the {task_output_description} of first most likely guess; not a complete sentence, just the guess!>\nP1: <ONLY the probability that G1 is correct, without any extra commentary whatsoever; just the probability!>\n...\nG{k}: <ONLY the {task_output_description} of {k}-th most likely guess>\nP{k}: <ONLY the probability that G{k} is correct, without any extra commentary whatsoever; just the probability!>\n"
+    prompt_description += f"Answer: <ONLY the {task_output_description} of first most likely guess; not a complete sentence, just the guess!>\n"
 else:
-    prompt_description += f"G1: <ONLY the {task_output_description} of first most likely guess; not a complete sentence, just the guess!>\n...\nG{k}: <ONLY the {task_output_description} of {k}-th most likely guess>\n\nP1: <ONLY the probability that G1 is correct, without any extra commentary whatsoever; just the probability!>\n...\nP{k}: <ONLY the probability that G{k} is correct, without any extra commentary whatsoever; just the probability!>\n"
+    prompt_description += f"Answer: <ONLY the {task_output_description} of first most likely guess; not a complete sentence, just the guess!>\n"
     
     
 hint_prompts = {
@@ -138,8 +126,6 @@ def generate_misleading_hint(hint_type, task_type, question, qa_dataset):
     elif task_type == "multi_choice_qa":
         random_answer = random.randint(0, len(qa_dataset[question]['options'])-1)
         random_answer = answer_list[random_answer]
-    elif task_type == "trivia_qa":
-        correct_answer = qa_dataset[question]['answer']
     else:
         raise ValueError(f"{task_type} not supported")
     
@@ -150,7 +136,7 @@ def generate_misleading_hint(hint_type, task_type, question, qa_dataset):
     
     return hint_prompt
 
-def generate_prompt(description, question, misleading_hint, model_name):
+def generate_prompt(description, question, misleading_hint):
     """
     1. description: prompt + answer format 
     2. the question
@@ -160,12 +146,8 @@ def generate_prompt(description, question, misleading_hint, model_name):
         hint_description = "Note that the hint is only for your reference. Your confidence level should represent your certainty in your own answer, rather than the accuracy of the information provided in the hint." 
     else:
         hint_description = ""
-    if model_name == "llama3.1-instruct":
-        prompt = [{'role':'system', 'content': f"{description}\n{hint_description}\n"},
-        {'role':'user', 'content': f'Question: {question}\n{misleading_hint}'},
-        {'role': 'assistant', 'content': ""}]
-    else:
-        prompt = f"{description}\n{hint_description}\nQuestion: {question}\n{misleading_hint}"
+    # TODO：
+    prompt = f"{description}\n{hint_description}\nQuestion: {question}\n{misleading_hint}"
     # prompt = f"Question: {question}\n{description}\n{hint_description}\n{misleading_hint}"
         
     return prompt
@@ -175,7 +157,7 @@ def generate_prompt(description, question, misleading_hint, model_name):
 # print sample data with sample prompt
 sample_question = next(iter(qa_data))
 sample_hint_prompt = generate_misleading_hint(hint_type="hint1" if args.num_ensemble > 1 else "hint0", task_type=args.task_type, question=sample_question, qa_dataset=qa_data)
-sample_prompt = generate_prompt(prompt_description, question=sample_question, misleading_hint=sample_hint_prompt, model_name = args.model_name)
+sample_prompt = generate_prompt(prompt_description, question=sample_question, misleading_hint=sample_hint_prompt)
 print("\n-------\n", sample_prompt, "\n-------\n")
 
 # pdb.set_trace()
@@ -192,7 +174,7 @@ params = vars(args)
 
 # tell if the output file exists
 if args.output_file is None:
-    args.output_file = f"final_output/{args.prompt_type}_{args.sampling_type}/" + args.model_name + "/" + args.dataset_name + "/" + f"{args.dataset_name}_{args.model_name}_{time_stamp}.json"
+    args.output_file = f"final_output/generate_answer/" + args.model_name + "/" + args.dataset_name + "/" + f"{args.dataset_name}_{args.model_name}_{time_stamp}.json"
     os.makedirs(osp.dirname(args.output_file), exist_ok=True)
 print("output_file: ", args.output_file, "\n")
 
@@ -213,7 +195,7 @@ if args.model_name == "llama3.1":
 elif args.model_name == "llama3.1-instruct":
     model_name = "/home/lyb/workspace/meta-llama/Llama-3.1-8B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype = torch.float16).to("cuda")
+    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 elif args.model_name == "llama3":
@@ -224,10 +206,14 @@ elif args.model_name == "llama3":
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 
 
+count = 0
 for idx, question in enumerate(qa_data.keys()):
     if question in final_result:
         print(f"Question: [{question}] already in final_result, skip")
         continue
+    if count >= 100:
+        break
+    count+=1
     final_result[question] = {}
     if args.sampling_type == "misleading":
         test_hints = ["hint0"] + ["hint" + str(i) for i in range(1, args.num_ensemble)]
@@ -256,7 +242,7 @@ for idx, question in enumerate(qa_data.keys()):
         
     elif args.sampling_type == "self_random":
         for ith in range(args.num_ensemble):
-            prompt = generate_prompt(prompt_description, question, misleading_hint="", model_name = args.model_name)
+            prompt = generate_prompt(prompt_description, question, misleading_hint="")
             hint_type = f"trail_{ith}"
             if args.model_name == "llama3.1" or args.model_name == "llama3.1-instruct" or args.model_name == "llama3":
                 final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
