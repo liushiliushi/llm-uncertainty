@@ -5,17 +5,17 @@ SAMPLING_TYPE="self_random"
 NUM_ENSEMBLE=1
 CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
 # directory of pre-trained peft model
-PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints/professional1106_brier_log"
+# PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints/professional1106_brier_log"
 
 #############################################################
 
-DATASET_NAME="Professional_Law"
-MODEL_NAME="llama3.1-instruct"
-TASK_TYPE="multi_choice_qa"
-DATASET_PATH="/home/lyb/workspace/dataset/data/val/professional_law_val.csv"
-USE_COT=false # use cot or not
-TEMPERATURE=0.7
-TOP_K=2
+# DATASET_NAME="Professional_Law"
+# MODEL_NAME="llama3.1-instruct"
+# TASK_TYPE="multi_choice_qa"
+# DATASET_PATH="/home/lyb/workspace/dataset/data/val/professional_law_val.csv"
+# USE_COT=false # use cot or not
+# TEMPERATURE=0.7
+# TOP_K=2
 
 #DATASET_NAME="BigBench_ObjectCounting"
 #MODEL_NAME="llama3.1-instruct"
@@ -26,13 +26,13 @@ TOP_K=2
 #TOP_K=2
 
 
-# DATASET_NAME="GSM8K"
-# MODEL_NAME="llama3.1-instruct"
-# TASK_TYPE="open_number_qa"
-# DATASET_PATH="/home/lyb/workspace/dataset/grade_school_math/data/test.jsonl"
-# USE_COT=true # use cot or not
-# TEMPERATURE=0.7
-# TOP_K=2
+DATASET_NAME="GSM8K"
+MODEL_NAME="llama3.1-instruct"
+TASK_TYPE="open_number_qa"
+DATASET_PATH="dataset/grade_school_math/data/test.jsonl"
+USE_COT=false # use cot or not
+TEMPERATURE=0.7
+TOP_K=2
 
 
 # DATASET_NAME="BigBench_DateUnderstanding"
@@ -92,7 +92,6 @@ python query_top_k.py \
    --sampling_type $SAMPLING_TYPE \
    --num_ensemble $NUM_ENSEMBLE \
    --temperature_for_ensemble $TEMPERATURE \
-   --from_peft_checkpoint $PEFT \
    $USE_COT_FLAG
 
 

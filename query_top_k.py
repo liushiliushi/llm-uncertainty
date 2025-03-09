@@ -17,7 +17,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
 
 time_stamp = time.strftime("%Y-%m-%d_%H-%M")
@@ -196,13 +195,13 @@ error_dataset = {}
 
 
 if args.model_name == "llama3.1":
-    model_name = "/home/workspace/meta-llama/Meta-Llama-3.1-8B"
+    model_name = "../meta-llama/Meta-Llama-3.1-8B"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 elif args.model_name == "llama3.1-instruct":
-    model_name = "/home/lyb/workspace/meta-llama/Llama-3.1-8B-Instruct"
+    model_name = "../meta-llama/Llama-3.1-8B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
