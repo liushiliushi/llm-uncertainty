@@ -45,7 +45,7 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
         with open(data_path,'r') as f:
             data = json.load(f)
         if task_type == "open_number_qa":
-            for qa in data['examples']:
+            for qa in data['examples'][800:]:
                 """ qa has two keys:  
                 {   "input": "I have a clarinet, a violin, and a flute. How many musical instruments do I have?",
                     "target": ["three", "3"] }
@@ -56,7 +56,7 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
                 
         elif task_type == "multi_choice_qa":
         
-            for qa in data['examples']:
+            for qa in data['examples'][2000:]:
                 question = qa['input'] +'\n' +'Options: '
                 j=0
                 for key, value in qa['target_scores'].items():

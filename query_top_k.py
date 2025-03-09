@@ -17,7 +17,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
 
 time_stamp = time.strftime("%Y-%m-%d_%H-%M")
@@ -202,7 +202,7 @@ if args.model_name == "llama3.1":
     if args.from_peft_checkpoint:
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 elif args.model_name == "llama3.1-instruct":
-    model_name = "/home/.llama/checkpoints/Meta-Llama3.1-8B-Instruct"
+    model_name = "/home/lyb/workspace/meta-llama/Llama-3.1-8B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
     if args.from_peft_checkpoint:
@@ -215,14 +215,10 @@ elif args.model_name == "llama3":
         model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
 
 
-count = 0
 for idx, question in enumerate(qa_data.keys()):
     if question in final_result:
         print(f"Question: [{question}] already in final_result, skip")
         continue
-    if count >= 100:
-        break
-    count+=1
     final_result[question] = {}
     if args.sampling_type == "misleading":
         test_hints = ["hint0"] + ["hint" + str(i) for i in range(1, args.num_ensemble)]
@@ -261,6 +257,7 @@ for idx, question in enumerate(qa_data.keys()):
                                                                             temperature=args.temperature_for_ensemble,
                                                                             model=model,
                                                                             tokenizer=tokenizer)
+                stop = 1
             else:
                 final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
                                                                             final_result, error_dataset, qa_data,

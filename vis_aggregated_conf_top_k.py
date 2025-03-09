@@ -28,9 +28,6 @@ import pandas as pd
 from argparse import ArgumentParser
 from adjustText import adjust_text
 from collections import Counter
-import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 option_list = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
@@ -101,7 +98,7 @@ data = data_results['processed_data']
 # if hyperparmeters are in data, use this to replace args parameters
 if 'hyperparameters' in data_results:
     assert args.model_name == data_results['hyperparameters']['model_name']
-    assert args.dataset_name == data_results['hyperparameters']['dataset_name']
+    # assert args.dataset_name == data_results['hyperparameters']['dataset_name']
     assert args.task_type == data_results['hyperparameters']['task_type']
     assert args.use_cot == data_results['hyperparameters']['use_cot'], (args.use_cot, data_results['hyperparameters']['use_cot'])
     assert args.prompt_type == data_results['hyperparameters']['prompt_type']
@@ -242,8 +239,6 @@ def search_vis_answers_top_k(result_dict, task_type):
     # for every question in the dataset, get their answers and their corresponding confidences -> can be multiple if num_ensemble > 1
     count = 0
     for key, value in result_dict.items():
-        if count == 18:
-            stop = 1
         count += 1
         """ Example below:
         - key: question text
@@ -262,7 +257,7 @@ def search_vis_answers_top_k(result_dict, task_type):
         elif task_type == 'multi_choice_qa':
             if isinstance(real_answer, int):
                 real_answer = option_list[real_answer]  
-        score_dicts["real_answer"].append(real_answer) 
+
         
         # get predicted answers and confidences over multiple queries -> for ensemble
         # hint_answers = {"trai_0":{"0":"A", "1":"B"}, "trail_1":{}}
@@ -299,8 +294,10 @@ def search_vis_answers_top_k(result_dict, task_type):
                     topk_answer_ranks[ans] = []
                 topk_answer_confs_alltrails[ans].append(top_k_conf[rank])
                 topk_answer_ranks[ans].append(int(rank))
-                
-        # compute consistency (only consider the first answer from Top-k answers)
+        if topk_answer_ranks == {}:
+            continue
+        score_dicts["real_answer"].append(real_answer)
+        # compute consistency (only consider the first answer from Top-k answers) 不需要考虑概率
         top_1_ans = [answer_list['0'] for _, answer_list in hint_answers.items()]
         counter = Counter(top_1_ans)
         total = len(top_1_ans)
@@ -314,6 +311,8 @@ def search_vis_answers_top_k(result_dict, task_type):
 
 
         # compute average confidence for every possible answer
+        if topk_answer_confs_alltrails == {}:
+            continue
         average_confs = {ans: sum(conf_lists)/len(conf_lists) / 100 for ans, conf_lists in topk_answer_confs_alltrails.items()}
         max_conf_option_topk = max(average_confs, key=average_confs.get)
         max_confidence_topk = average_confs[max_conf_option_topk]
@@ -490,7 +489,10 @@ real_answers = score_dict["real_answer"]
 for metric_name, values in score_dict['scores'].items():
     predicted_answers = values['answer']
     predicted_confs = values['score']
-    correct = [real_answers[i]==predicted_answers[i] for i in range(len(real_answers))]
+    try:
+        correct = [real_answers[i]==predicted_answers[i] for i in range(len(real_answers))]
+    except:
+        stop = 1
     result_matrics[metric_name] = compute_conf_metrics(correct, predicted_confs)
     
     # auroc visualization

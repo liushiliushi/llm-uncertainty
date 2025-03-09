@@ -22,7 +22,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 
 def LlamaChatCompletion(model_name, prompt, max_tokens, model, tokenizer):
-    os.environ['CUDA_VISIBLE_DEVICES'] = "5"
+    # os.environ['CUDA_VISIBLE_DEVICES'] = "5"
     # model_name = "daryl149/llama-2-7b-chat-hf"
     # tokenizer = AutoTokenizer.from_pretrained(model_name)
     # model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
