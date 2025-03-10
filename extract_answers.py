@@ -157,10 +157,10 @@ for question, answer in result_data.items():
                 extracted_answer, extracted_conf = extract_hint_response_top_k(hint_response, args.num_K, options, args.task_type, error_log_file)
             elif args.prompt_type == "multi_step":
                 extracted_answer, extracted_conf, step_confs = extract_hint_response_multistep(hint_response, options, args.task_type, error_log_file)
-        except:
+        except RuntimeError:
             print("====\nMatch Error: ", hint_response)
             error_questions[question] = {"answer": hint_response}
-            pdb.set_trace()
+            # pdb.set_trace()
             
         hint_responses[hint_key] = hint_response
         hint_entries[hint_key] = hint_value.get('hint_entry', "")
@@ -203,7 +203,7 @@ for question, answer in result_data.items():
         if isinstance(real_answer, int):
             # change real answer to be the option letter
             real_answer = chr(ord('A') + real_answer)
-    elif args.task_type == "open_number_qa":
+    elif args.task_type == "open_number_qa" or args.task_type == "open_ended":
         pass
     else:
         assert False

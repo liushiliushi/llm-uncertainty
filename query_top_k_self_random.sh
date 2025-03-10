@@ -2,7 +2,7 @@
 
 PROMPT_TYPE="top_k"
 SAMPLING_TYPE="self_random" 
-NUM_ENSEMBLE=1
+NUM_ENSEMBLE=3
 CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
 # directory of pre-trained peft model
 # PEFT="/home/lyb/workspace/llama-recipes/src/checkpoints/professional1106_brier_log"
@@ -26,14 +26,22 @@ CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
 #TOP_K=2
 
 
-DATASET_NAME="GSM8K"
-MODEL_NAME="llama3.1-instruct"
-TASK_TYPE="open_number_qa"
-DATASET_PATH="dataset/grade_school_math/data/test.jsonl"
-USE_COT=false # use cot or not
-TEMPERATURE=0.7
-TOP_K=2
+# DATASET_NAME="GSM8K"
+# MODEL_NAME="llama3.1-instruct"
+# TASK_TYPE="open_number_qa"
+# DATASET_PATH="dataset/grade_school_math/data/test.jsonl"
+# USE_COT=true # use cot or not
+# TEMPERATURE=0.1
+# TOP_K=3
 
+
+DATASET_NAME="trivia_qa"
+MODEL_NAME="llama3.1-instruct"
+TASK_TYPE="open_ended"
+DATASET_PATH="dataset"
+USE_COT=true # use cot or not
+TEMPERATURE=0.1
+TOP_K=3
 
 # DATASET_NAME="BigBench_DateUnderstanding"
 # MODEL_NAME="gpt4"
@@ -53,9 +61,9 @@ TOP_K=2
 # TOP_K=4
 
 # DATASET_NAME="BigBench_strategyQA"
-# MODEL_NAME="gpt4"
+# MODEL_NAME="llama3.1-instruct"
 # TASK_TYPE="multi_choice_qa"
-# DATASET_PATH="dataset/MMLU/business_ethics_test.csv"
+# DATASET_PATH="dataset/StrategyQA/task.json"
 # USE_COT=true # use cot or not
 # TEMPERATURE=0.7
 # TOP_K=4

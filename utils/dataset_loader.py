@@ -2,7 +2,7 @@ import json, pdb
 from typing import Dict
 import os.path as osp
 import pandas as pd
-
+import datasets
 def load_dataset_w_prediction(dataset_name: str, task_type: str, data_path: str):
     """
     dataset_name: name of the dataset
@@ -21,7 +21,7 @@ def load_dataset_w_prediction(dataset_name: str, task_type: str, data_path: str)
 def load_dataset(dataset_name: str, task_type: str, data_path: str):
     """
     dataset_name: name of the dataset
-    task_type: type of the task, e.g. multi_choice_qa, open_number_qa
+    task_type: type of the task, e.g. multi_choice_qa, open_number_qa, open_ended
     data_path: path to the dataset
     """
     
@@ -36,16 +36,30 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
     if dataset_name == "GSM8K":
         import dataset.grade_school_math.dataset as gsm_loader
         examples = gsm_loader.get_examples(data_path)
+        num = 0
         for qa in examples:
+            if num >= 1000:
+                break    
             question = qa['question']
             answer = {'answer':gsm_loader.extract_answer(qa["answer"]), 'options':number_options}
             qa_data[question] = answer
+            num+=1
+    elif dataset_name == "trivia_qa":
+        dataset = datasets.load_dataset("mandarjoshi/trivia_qa", "rc.web.nocontext", cache_dir="dataset/Trivia_qa_raw", split='validation[:1000]')
+        for sample in dataset:
+            correct_answers = sample['answer']['normalized_aliases'] + [normalize_answer(ans) for ans in sample['answer'].get('human_answers', [])]
+            # For open-ended questions, we use the first answer as the primary answer
+            # and store all possible answers in options for validation
+            qa_data[sample['question']] = {
+                'answer': correct_answers[0],  # Primary answer
+                'options': correct_answers     # All acceptable answers
+            }
 
     elif "BigBench" in dataset_name:
         with open(data_path,'r') as f:
             data = json.load(f)
         if task_type == "open_number_qa":
-            for qa in data['examples'][800:]:
+            for qa in data['examples'][:1000]:
                 """ qa has two keys:  
                 {   "input": "I have a clarinet, a violin, and a flute. How many musical instruments do I have?",
                     "target": ["three", "3"] }
@@ -56,7 +70,7 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
                 
         elif task_type == "multi_choice_qa":
         
-            for qa in data['examples'][2000:]:
+            for qa in data['examples'][:1000]:
                 question = qa['input'] +'\n' +'Options: '
                 j=0
                 for key, value in qa['target_scores'].items():

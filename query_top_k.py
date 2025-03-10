@@ -11,10 +11,11 @@ import os.path as osp
 import random
 import json
 from utils.dataset_loader import load_dataset
-from utils.llm_query_helper import calculate_result_per_question
+# from utils.llm_query_helper import calculate_result_per_question
 from argparse import ArgumentParser
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+from vllm import LLM, SamplingParams
 import os
 
 openai_key = "sk-Faak8mmqNrE3ChiZ323cF7Ed69D74f54A33905954dDfCfE7" # TODO: replace with your openai key
@@ -69,7 +70,6 @@ print("output_file: ", args.output_file, "\n")
 # questions are the keys and answers are the values
 print(f"Loading dataset {args.dataset_name} from {args.data_path}")
 qa_data = load_dataset(args.dataset_name, args.task_type, args.data_path)
-
 ###################### PROMPT ############################
 k = args.num_K
 print(f"***Using top {k} results for {args.dataset_name} {args.task_type} {args.model_name}***")
@@ -78,6 +78,8 @@ if args.task_type == "multi_choice_qa":
     task_output_description = "option letter"
 elif args.task_type == "open_number_qa":
     task_output_description = "numerical answer"
+elif args.task_type == "open_ended":
+    task_output_description = "answer"
 else:
     raise ValueError(f"task_type {args.task_type} not supported")
 
@@ -134,6 +136,8 @@ def generate_misleading_hint(hint_type, task_type, question, qa_dataset):
     elif task_type == "multi_choice_qa":
         random_answer = random.randint(0, len(qa_dataset[question]['options'])-1)
         random_answer = answer_list[random_answer]
+    elif task_type == 'open_ended':
+        correct_answer = qa_dataset[question]['answer']
     else:
         raise ValueError(f"{task_type} not supported")
     
@@ -144,28 +148,51 @@ def generate_misleading_hint(hint_type, task_type, question, qa_dataset):
     
     return hint_prompt
 
-def generate_prompt(description, question, misleading_hint):
+def generate_prompt(description, question, misleading_hint, tokenizer):
     """
     1. description: prompt + answer format 
     2. the question
     3. misleading_hint
     """
-    if misleading_hint != "":
-        hint_description = "Note that the hint is only for your reference. Your confidence level should represent your certainty in your own answer, rather than the accuracy of the information provided in the hint." 
-    else:
-        hint_description = ""
+    hint_description = ""
     # TODO：
-    prompt = f"{description}\n{hint_description}\nQuestion: {question}\n{misleading_hint}"
+    # prompt = f"{description}\n{hint_description}\nQuestion: {question}\n{misleading_hint}"
     # prompt = f"Question: {question}\n{description}\n{hint_description}\n{misleading_hint}"
-        
+    prompt = [{'role': 'system', 'content': f"{description}\n{hint_description}"},
+            {"role": "user", "content":  f"Question: {question}"},
+            {"role": "assistant", "content": f"Response:"},
+            ]
+    prompt = tokenizer.apply_chat_template(prompt, tokenize=False, padding="longest", truncation=True, return_tensors="pt", continue_final_message=True, max_length=8192)
+
     return prompt
 
 ############## MAIN FUNCTION #################### 
 
+
+if args.model_name == "llama3.1":
+    model_name = "../meta-llama/Meta-Llama-3.1-8B"
+    model = LLM(model=model_name, tensor_parallel_size=1)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name, 
+        padding_side='left'
+    )
+elif args.model_name == "llama3.1-instruct":
+    model_name = "../meta-llama/Llama-3.1-8B-Instruct"
+    model = LLM(model=model_name, tensor_parallel_size=1)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name, 
+        padding_side='left'
+    )
+elif args.model_name == "llama3":
+    model_name = "/home/lyb/workspace/llama3/llama3-8b"
+    model = LLM(model=model_name, tensor_parallel_size=1)
+
+
+
 # print sample data with sample prompt
 sample_question = next(iter(qa_data))
-sample_hint_prompt = generate_misleading_hint(hint_type="hint1" if args.num_ensemble > 1 else "hint0", task_type=args.task_type, question=sample_question, qa_dataset=qa_data)
-sample_prompt = generate_prompt(prompt_description, question=sample_question, misleading_hint=sample_hint_prompt)
+# sample_hint_prompt = generate_misleading_hint(hint_type="hint1" if args.num_ensemble > 1 else "hint0", task_type=args.task_type, question=sample_question, qa_dataset=qa_data)
+sample_prompt = generate_prompt(prompt_description, question=sample_question, misleading_hint="", tokenizer=tokenizer)
 print("\n-------\n", sample_prompt, "\n-------\n")
 
 # pdb.set_trace()
@@ -194,98 +221,113 @@ start_time = time.time()
 error_dataset = {}
 
 
-if args.model_name == "llama3.1":
-    model_name = "../meta-llama/Meta-Llama-3.1-8B"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
-    if args.from_peft_checkpoint:
-        model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
-elif args.model_name == "llama3.1-instruct":
-    model_name = "../meta-llama/Llama-3.1-8B-Instruct"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
-    if args.from_peft_checkpoint:
-        model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
-elif args.model_name == "llama3":
-    model_name = "/home/lyb/workspace/llama3/llama3-8b"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
-    if args.from_peft_checkpoint:
-        model = PeftModel.from_pretrained(model, args.from_peft_checkpoint, is_trainable=True)
-
+# Collect all prompts first
+all_prompts = []
+all_questions = []
+all_hint_types = []
 
 for idx, question in enumerate(qa_data.keys()):
     if question in final_result:
         print(f"Question: [{question}] already in final_result, skip")
         continue
+    
     final_result[question] = {}
     if args.sampling_type == "misleading":
         test_hints = ["hint0"] + ["hint" + str(i) for i in range(1, args.num_ensemble)]
         assert len(test_hints) <= len(hint_prompts), f"number of hints {len(test_hints)} should be less than or equal to {len(hint_prompts)}; otherwise we need to add more hint prompts"
         for hint_type in test_hints:
             misleading_hint = generate_misleading_hint(hint_type, args.task_type, question, qa_data)
-            prompt = generate_prompt(prompt_description, question, misleading_hint)
-            print(f"using {hint_type}, prompt: \n{prompt}")
-
-            if args.model_name == "llama3.1" or args.name == "llama3.1-instruct" or args.name == "llama3":
-                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
-                                                                            final_result, error_dataset, qa_data,
-                                                                            hint_type, args.task_type, args.use_cot,
-                                                                            openai_key=openai_key,
-                                                                            temperature=args.temperature_for_ensemble,
-                                                                            model=model,
-                                                                            tokenizer=tokenizer)
-            else:
-                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
-                                                                            final_result, error_dataset, qa_data,
-                                                                            hint_type, args.task_type, args.use_cot,
-                                                                            openai_key=openai_key,
-                                                                            temperature=args.temperature_for_ensemble)
-
-            final_result[question][hint_type]["hint_entry"] = misleading_hint
-        
+            prompt = generate_prompt(prompt_description, question, misleading_hint, tokenizer)
+            print(f"Collecting prompt for {question} with {hint_type}")
+            
+            all_prompts.append(prompt)
+            all_questions.append(question)
+            all_hint_types.append(hint_type)
+            
     elif args.sampling_type == "self_random":
         for ith in range(args.num_ensemble):
-            prompt = generate_prompt(prompt_description, question, misleading_hint="")
+            prompt = generate_prompt(prompt_description, question, misleading_hint="", tokenizer=tokenizer)
             hint_type = f"trail_{ith}"
-            if args.model_name == "llama3.1" or args.model_name == "llama3.1-instruct" or args.model_name == "llama3":
-                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
-                                                                            final_result, error_dataset, qa_data,
-                                                                            hint_type, args.task_type, args.use_cot,
-                                                                            openai_key=openai_key,
-                                                                            temperature=args.temperature_for_ensemble,
-                                                                            model=model,
-                                                                            tokenizer=tokenizer)
-                stop = 1
-            else:
-                final_result, error_dataset = calculate_result_per_question(args.model_name, question, prompt,
-                                                                            final_result, error_dataset, qa_data,
-                                                                            hint_type, args.task_type, args.use_cot,
-                                                                            openai_key=openai_key,
-                                                                            temperature=args.temperature_for_ensemble)
-
-    if idx % 5 == 0:
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        final_json = {'hyperparameters': params, 'elapsed_time': "Elapsed time: {:.2f} seconds".format(elapsed_time), 'sample_tested': len(final_result), 'error_count':len(error_dataset), 'sample_prompt':{'question': sample_question, 'hint': sample_hint_prompt, 'prompt': sample_prompt}, 'final_result': final_result, 'error_dataset': error_dataset}
-        with open(args.output_file, 'w') as f:
-            f.write(json.dumps(final_json, indent=4))
-    
-    if idx == 3:
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        final_json = {'hyperparameters': params, 'elapsed_time': "Elapsed time: {:.2f} seconds".format(elapsed_time), 'sample_tested': len(final_result), 'error_count':len(error_dataset), 'sample_prompt':{'question': sample_question, 'hint': sample_hint_prompt, 'prompt': sample_prompt}, 'final_result': final_result, 'error_dataset': error_dataset}
-        with open(args.output_file, 'w') as f:
-            f.write(json.dumps(final_json, indent=4))
-        # pdb.set_trace()
-    
-    print("-"*70)
-    
             
+            all_prompts.append(prompt)
+            all_questions.append(question)
+            all_hint_types.append(hint_type)
 
+# Generate all responses at once using vLLM
+if args.model_name.lower() in ['llama3.1', 'llama3.1-instruct', 'llama3']:
+    print(f"\nGenerating responses for {len(all_prompts)} prompts...")
+    max_tokens = 2000 if args.use_cot else 400
+    sampling_params = SamplingParams(
+        temperature=args.temperature_for_ensemble,
+        max_tokens=max_tokens
+    )
+    outputs = model.generate(all_prompts, sampling_params)
+    responses = [output.outputs[0].text for output in outputs]
+    
+    # Process responses and update final_result
+    for question, hint_type, response in zip(all_questions, all_hint_types, responses):
+        if hint_type.startswith('hint'):
+            final_result[question][hint_type] = {
+                'hint_response': response,
+                'real_answer': qa_data[question],
+                'hint_entry': hint_prompts[hint_type] + (str(generate_misleading_hint(hint_type, args.task_type, question, qa_data)) if hint_type != 'hint0' else '')
+            }
+        else:  # self_random case
+            final_result[question][hint_type] = {
+                'hint_response': response,
+                'real_answer': qa_data[question]
+            }
+        
+        # print(f"\nQuestion: {question[:100]}...")
+        # print(f"Response ({hint_type}): {response}")
+        # print("-" * 70)
+        
+        # Save results periodically
+        if len(final_result) % 5 == 0:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            final_json = {
+                'hyperparameters': params,
+                'elapsed_time': f"Elapsed time: {elapsed_time:.2f} seconds",
+                'sample_tested': len(final_result),
+                'error_count': len(error_dataset),
+                'sample_prompt': {
+                    'question': sample_question,
+                    'hint': "",
+                    'prompt': sample_prompt
+                },
+                'final_result': final_result,
+                'error_dataset': error_dataset
+            }
+            with open(args.output_file, 'w') as f:
+                f.write(json.dumps(final_json, indent=4))
+
+else:
+    # For non-vLLM models, use the original processing method
+    for idx, (question, prompt, hint_type) in enumerate(zip(all_questions, all_prompts, all_hint_types)):
+        final_result, error_dataset = calculate_result_per_question(
+            args.model_name, question, prompt,
+            final_result, error_dataset, qa_data,
+            hint_type, args.task_type, args.use_cot,
+            openai_key=openai_key,
+            temperature=args.temperature_for_ensemble
+        )
+
+# Save final results
 end_time = time.time()
 elapsed_time = end_time - start_time
-final_json = {'hyperparameters': params, 'elapsed_time': "Elapsed time: {:.2f} seconds".format(elapsed_time), 'sample_tested': len(final_result), 'error_count':len(error_dataset), 'sample_prompt':{'question': sample_question, 'hint': sample_hint_prompt, 'prompt': sample_prompt}, 'final_result': final_result, 'error_dataset': error_dataset} 
-
+final_json = {
+    'hyperparameters': params,
+    'elapsed_time': f"Elapsed time: {elapsed_time:.2f} seconds",
+    'sample_tested': len(final_result),
+    'error_count': len(error_dataset),
+    'sample_prompt': {
+        'question': sample_question,
+        'hint': "",
+        'prompt': sample_prompt
+    },
+    'final_result': final_result,
+    'error_dataset': error_dataset
+}
 with open(args.output_file, 'w') as f:
     f.write(json.dumps(final_json, indent=4))

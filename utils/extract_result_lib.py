@@ -94,13 +94,19 @@ def check_validity_answer_conf(extracted_answer, extracted_conf, task_type, erro
         try:
             extracted_answer = word_to_int(extracted_answer.lower())
         except:
-            
             with open(error_log_file, 'a') as f:
                 f.write(f"Number Answer Invalid: {extracted_answer}")
             extracted_answer = None
-    else:
-        raise ValueError(f"The task type {task_type} is not in the list: ['multi_choice_qa', 'open_number_qa']")
     
+    elif task_type == "open_ended":
+        # For open-ended questions, we accept any non-empty string as valid answer
+        if not isinstance(extracted_answer, str) or not extracted_answer.strip():
+            with open(error_log_file, 'a') as f:
+                f.write(f"Open-ended Answer Invalid: {extracted_answer}")
+            extracted_answer = None
+    
+    else:
+        raise ValueError(f"The task type {task_type} is not in the list: ['multi_choice_qa', 'open_number_qa', 'open_ended']")
     
     return extracted_answer, extracted_conf
 
@@ -478,36 +484,30 @@ def extract_hint_response_top_k(text, K, options: Dict[str, str], task_type, err
             rf"(?:G{ith}|Guess {ith}):\s*(.*?)\s*(?:P{ith}|Probability {ith}):\s*(\d+)%*"
         ]
         
-        # [\(\[]?([A-Z])[\)\]]?  -> [\(\[]? matches optional ([
-        # [\)\]]? matches optional )]
-        # most appears in vicuna
-        # Note: .* can match any character (except for a newline character) zero or more times
-        patterns_multi_choice_werid = [
-            r"Answer: [\(\[]?([A-Z])[\)\]]?[,.]?\s+Confidence level: (\d+%)",
-            r"Answer: [\(\[]?([A-Z])[\)\]]?[,.]?.*\s+Confidence(?: level)?: (\d+%)",
-            r"Answer:\s*[\(\[]?([A-Z])[\)\]]?[,.]?\s+Confidence level:\s*(\d+%)"
-        ]
-        
         patterns_and_postprocess_multi_choice = []
         patterns_and_postprocess_multi_choice.extend([(pat, default_postprocess_match) for pat in patterns_multi_choice])
         patterns_and_postprocess_multi_choice.extend([(pat, postprocess_match_without_option) for pat in patterns_multi_choice_without_option])
-        # patterns_and_postprocess_multi_choice.extend([(pat, postprocess_match_without_option) for pat in patterns_multi_choice_werid])
         
         # Define five different regular expression patterns
         patterns_open_number = [
             rf"G{ith}:\s*.*?([0-9,.]+)\s*P{ith}:\s*(\d+)%*",
             rf"G{ith}:\s*.*?([0-9,.]+)\s*.*\s+P{ith}:\s*(\d+)%*",
-            
         ]
-        
         
         patterns_and_postprocess_open_number = [(pat, postprocess_match_open_number) for pat in patterns_open_number]
         
+        # Define patterns for open-ended responses
+        patterns_open_ended = [
+            (rf"G{ith}:\s*(.*?)\s*P{ith}:\s*(\d+)", lambda m: (m.group(1).strip(), float(m.group(2)))),
+            (rf"Guess {ith}:\s*(.*?)\s*Probability {ith}:\s*(\d+)", lambda m: (m.group(1).strip(), float(m.group(2))))
+        ]
         
         if task_type == "multi_choice_qa":
             patterns_and_postprocess = patterns_and_postprocess_multi_choice
         elif task_type == "open_number_qa":
             patterns_and_postprocess = patterns_and_postprocess_open_number
+        elif task_type == "open_ended":
+            patterns_and_postprocess = patterns_open_ended
         else:
             raise ValueError(f"task_type {task_type} is not supported")
         
@@ -908,4 +908,29 @@ def extract5(data):
     result["final_answer"] = final_answer
     result["final_confidence"] = final_confidence
     return result
+
+
+def patterns_and_postprocess_open_ended(response: str, options: dict) -> Tuple[str, float]:
+    """Extract answer and confidence from open-ended response"""
+    # Patterns for matching answers and confidences
+    patterns = [
+        # G1: answer P1: confidence
+        (r"G1:\s*(.*?)\s*\nP1:\s*(\d+)", lambda m: (m.group(1).strip(), float(m.group(2)))),
+        # Just the answer and confidence
+        (r"Answer:\s*(.*?)\s*\nConfidence:\s*(\d+)", lambda m: (m.group(1).strip(), float(m.group(2)))),
+        # Fallback pattern
+        (r"(.*?)\s*\n.*?(\d+)%", lambda m: (m.group(1).strip(), float(m.group(2))/100))
+    ]
+    
+    for pattern, processor in patterns:
+        match = re.search(pattern, response)
+        if match:
+            try:
+                answer, confidence = processor(match)
+                confidence = min(max(confidence/100, 0), 1)
+                return answer, confidence
+            except:
+                continue
+            
+    return None, None
 
