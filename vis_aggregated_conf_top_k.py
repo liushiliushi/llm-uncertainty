@@ -17,6 +17,7 @@ This code is used to visualize the performance (e.g. ACC/AUCROC/ECE) of  **Confi
 
 
 #%%
+from utils.gpt_answer_scoring import GPTAnswerScoring
 import json, os, sys, pdb, json
 import numpy as np
 import os.path as osp
@@ -28,6 +29,29 @@ import pandas as pd
 from argparse import ArgumentParser
 from adjustText import adjust_text
 from collections import Counter
+import re
+import string
+
+def normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
+
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def handle_punc(text):
+        exclude = set(string.punctuation + "".join([u"'", u"'", u"´", u"`"]))
+        return ''.join(ch if ch not in exclude else ' ' for ch in text)
+
+    def lower(text):
+        return text.lower()
+
+    def replace_underscore(text):
+        return text.replace('_', ' ')
+
+    return white_space_fix(remove_articles(handle_punc(lower(replace_underscore(str(s)))))).strip()
 
 option_list = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
@@ -91,7 +115,6 @@ visual_result_file = osp.join(visual_folder, input_file_name.replace(".json", ".
 with open(osp.join(args.input_file), "r") as f:
     data_results = json.load(f)
 
-print("data_results.keys():", data_results.keys())
 data = data_results['processed_data']    
 
 
@@ -208,7 +231,7 @@ elif args.dataset_name in ["Professional_Law", "Business_Ethics"]:
     normal_option_list = ["A", "B", "C", "D"]
 elif args.dataset_name in ["sportUND", "strategyQA", "StrategyQA", "Bigbench_strategyQA", "BigBench_sportUND", "BigBench_strategyQA"]:
     normal_option_list = ["A", "B"]
-elif args.dataset_name in ["GSM8K", "BigBench_ObjectCounting"]:
+elif args.dataset_name in ["GSM8K", "BigBench_ObjectCounting", "trivia_qa", "hotpot_qa", "truthful_qa"]:
     normal_option_list = None
 else:
     raise NotImplementedError(f"Please specify the normal_option_list for this dataset {args.dataset_name}")
@@ -490,9 +513,32 @@ for metric_name, values in score_dict['scores'].items():
     predicted_answers = values['answer']
     predicted_confs = values['score']
     try:
-        correct = [real_answers[i]==predicted_answers[i] for i in range(len(real_answers))]
-    except:
-        stop = 1
+        if args.task_type == "open_number_qa":
+            correct = [real_answers[i]==predicted_answers[i] for i in range(len(real_answers))]
+        elif args.task_type == "multi_choice_qa":
+            correct = [real_answers[i]==predicted_answers[i] for i in range(len(real_answers))]
+        elif args.dataset_name == "trivia_qa":  # open-ended tasks
+            correct = []
+            for i in range(len(real_answers)):
+                pred_norm = normalize_answer(predicted_answers[i])
+                # Check if normalized prediction matches normalized real answer
+                if pred_norm in real_answers[i]:
+                    correct.append(True)
+                else:
+                    correct.append(False)
+        elif args.dataset_name == "hotpot_qa" or args.dataset_name == "truthful_qa":
+            correct = []
+            answer_scorer = GPTAnswerScoring()
+            # Convert data dictionary keys to list to maintain order
+            question_keys = list(data.keys())   
+            for i in range(len(real_answers)):
+                question = question_keys[i]
+                cor = answer_scorer.score(question, predicted_answers[i], real_answers[i])
+                correct.append(cor)
+    except Exception as e:
+        print(f"Error in computing metrics for {metric_name}: {str(e)}")
+        continue
+        
     result_matrics[metric_name] = compute_conf_metrics(correct, predicted_confs)
     
     # auroc visualization

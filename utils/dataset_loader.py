@@ -15,7 +15,26 @@ def load_dataset_w_prediction(dataset_name: str, task_type: str, data_path: str)
     print("Information of used dataset: ", data['hyperparameters']) 
     
     return data  
+def normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
 
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def handle_punc(text):
+        exclude = set(string.punctuation + "".join([u"‘", u"’", u"´", u"`"]))
+        return ''.join(ch if ch not in exclude else ' ' for ch in text)
+
+    def lower(text):
+        return text.lower()
+
+    def replace_underscore(text):
+        return text.replace('_', ' ')
+
+    return white_space_fix(remove_articles(handle_punc(lower(replace_underscore(s))))).strip()
 
 
 def load_dataset(dataset_name: str, task_type: str, data_path: str):
@@ -51,9 +70,26 @@ def load_dataset(dataset_name: str, task_type: str, data_path: str):
             # For open-ended questions, we use the first answer as the primary answer
             # and store all possible answers in options for validation
             qa_data[sample['question']] = {
-                'answer': correct_answers[0],  # Primary answer
+                'answer': correct_answers,  # Primary answer
                 'options': correct_answers     # All acceptable answers
             }
+    elif dataset_name == "hotpot_qa":
+        dataset = datasets.load_dataset("hotpotqa/hotpot_qa", 'distractor', cache_dir="dataset/Hotpot_qa_raw", split='validation[:1000]', trust_remote_code=True)
+        for sample in dataset:
+            correct_answers = sample['answer']
+            qa_data[sample['question']] = {
+                'answer': correct_answers,  # Primary answer
+                'options': correct_answers     # All acceptable answers
+            }
+    elif dataset_name == "truthful_qa":
+        dataset = datasets.load_dataset("truthful_qa", "generation", cache_dir="dataset/Truthful_qa_raw", split="validation")
+        for sample in dataset:
+            correct_answers = json.dumps(sample['correct_answers'])
+            qa_data[sample['question']] = {
+                'answer': correct_answers,  # Primary answer
+                'options': correct_answers     # All acceptable answers
+            }
+
 
     elif "BigBench" in dataset_name:
         with open(data_path,'r') as f:
