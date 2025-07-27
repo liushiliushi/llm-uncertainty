@@ -27,7 +27,7 @@ CONFIDENCE_TYPE="${PROMPT_TYPE}_${SAMPLING_TYPE}_${NUM_ENSEMBLE}"
 
 
 DATASET_NAME="GSM8K"
-MODEL_NAME="llama3.1-instruct"
+MODEL_NAME="gpt4o"
 TASK_TYPE="open_number_qa"
 DATASET_PATH="dataset/grade_school_math/data/test.jsonl"
 USE_COT=true # use cot or not
